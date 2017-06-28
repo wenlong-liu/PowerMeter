@@ -1,4 +1,4 @@
-#include <dht.h>  // for DHT22 sensor
+#include <DHT.h>  // for DHT22 sensor
 #include <RTClib.h>
 #include <Wire.h>
 #include <Adafruit_INA219.h>
@@ -8,11 +8,12 @@
 
 SdFat SD;
 #define OLED_RESET 4
-#define DHT22_PIN 7 // connect DHT22 sensor to pin #7.
 Adafruit_SSD1306 display(OLED_RESET);
 Adafruit_INA219 ina219;
 RTC_DS3231 RTC;
-dht DHT;
+#define DHT22_PIN 7 // connect DHT22 sensor to pin #7.
+#define DHTTYPE DHT22   // DHT 22  (AM2302)
+DHT DHT(DHT22_PIN, DHTTYPE); //// Initialize DHT sensor for normal 16mhz Arduino
 
 unsigned long interval = 10000;  // Reading interval is 10 seconds.
 const int chipSelect = 10;
@@ -33,6 +34,7 @@ void setup() {
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   ina219.begin();
   RTC.begin();
+  DHT.begin();
 }
 
 void loop() {
@@ -90,11 +92,11 @@ void displaydata() {
   display.setCursor(0,20);
   display.println("ts:");
   display.setCursor(20, 20);
-  display.println(timestamp);
-  display.setCursor(60,20);
+ // display.println(timestamp);
+  display.setCursor(90,20);
   display.println(temp);
-  display.setCursor(100,20);
-  display.println("*C");
+  display.setCursor(120,20);
+  display.println("C");
   display.display();
 }
 
@@ -108,7 +110,7 @@ void ina219values() {
 }
 
 void dht22values() {
-  int chk = DHT.read11(DHT22_PIN);
-  temp = DHT.temperature;
-  humidity = DHT.humidity;
+  // read huimidity and temperatue values from DHT22.
+   temp = DHT.readTemperature();
+   humidity = DHT.readHumidity();
 }
