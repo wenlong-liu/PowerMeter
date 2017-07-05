@@ -16,7 +16,7 @@ RTC_DS3231 RTC;
 #define DHTTYPE DHT22   // DHT 22  (AM2302)
 DHT DHT(DHT22_PIN, DHTTYPE); //// Initialize DHT sensor for normal 16mhz Arduino
 
-unsigned long interval = 1000;  // Reading interval is 1 second.
+unsigned long interval = 5000;  // Reading interval is 5 second.
 const int chipSelect = 10;
 float shuntvoltage = 0;
 float busvoltage = 0;
@@ -37,11 +37,13 @@ void setup() {
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   ina219.begin();
   RTC.begin();
+  DHT.begin();
 }
 
 void loop() {
   current_time = RTC.now();
   timestamp = current_time.unixtime();
+  dht22values();
   ina219values();
   powerEstimation();
   displaydata(); // Display time, voltage, current, power and energy consumption.
@@ -100,7 +102,7 @@ void displaydata() {
   display.println("mW");}
   else {
   display.setCursor(0, 10);
-  display.println(power * 1000);
+  display.println( power * 1000 );
   display.setCursor(35, 10);
   display.println("W");  }
   display.setCursor(50, 10);
@@ -111,15 +113,14 @@ void displaydata() {
   display.println(temp);
   display.setCursor(30, 20);
   display.println("C");
-  display.setCursor(50,20);
+  display.setCursor(40,20);
   display.println(RC);
   display.setCursor(65, 20);
-  display.println("min");
+  display.println("Ah");
   display.setCursor(90,20);
-  display.println(solar);
+  display.println(solar );
   display.setCursor(120, 20);
-  display.println("W");
-  
+  display.println("W"); 
   display.display();
 }
 
@@ -140,6 +141,8 @@ void dht22values() {
 
 void powerEstimation(){
    // Estimate the power usage for devices.
-   RC = power *1000 * 72 /(10 * 0.4176);
-   solar = power *1000 * 24 * 1.2 / 4.5;
+   RC = power * 72 /(1000 * 10);
+   RC = floor(RC * 100 + 0.5)/100;
+   solar = power  * 24 * 1.2 / (1000*4.5);
+   solar = floor(solar * 100 + 0.5)/100;
 }
