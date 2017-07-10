@@ -1,22 +1,18 @@
-#include <DHT.h>  // for DHT22 sensor
 #include <RTClib.h>
 #include <Wire.h>
 #include <Adafruit_INA219.h>
 #include <Adafruit_SSD1306.h>
 #include <SPI.h>
 #include "SdFat.h"
-//Version 0.1.1
+//Version 0.1.2
 
 SdFat SD;
 #define OLED_RESET 4
 Adafruit_SSD1306 display(OLED_RESET);
 Adafruit_INA219 ina219;
 RTC_DS3231 RTC;
-#define DHT22_PIN 7 // connect DHT22 sensor to pin #7.
-#define DHTTYPE DHT22   // DHT 22  (AM2302)
-DHT DHT(DHT22_PIN, DHTTYPE); //// Initialize DHT sensor for normal 16mhz Arduino
 
-unsigned long interval = 5000;  // Reading interval is 5 second.
+unsigned long interval = 30000;  // Reading interval is 5 second.
 const int chipSelect = 10;
 float shuntvoltage = 0;
 float busvoltage = 0;
@@ -26,8 +22,6 @@ float power = 0;
 float energy = 0;
 float RC = 0;
 float solar = 0;
-float temp = 0;
-float humidity = 0;
 DateTime current_time;
 File Results;
 uint32_t timestamp ;
@@ -37,13 +31,11 @@ void setup() {
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   ina219.begin();
   RTC.begin();
-  DHT.begin();
 }
 
 void loop() {
   current_time = RTC.now();
   timestamp = current_time.unixtime();
-  dht22values();
   ina219values();
   powerEstimation();
   displaydata(); // Display time, voltage, current, power and energy consumption.
@@ -64,13 +56,9 @@ void writeToCSV(){
       Results.print(",");
       Results.print(energy);
       Results.print(",");
-      Results.print(temp);
+      Results.print(RC,2);
       Results.print(",");
-      Results.print(humidity);
-      Results.print(",");
-      Results.print(RC);
-      Results.print(",");
-      Results.print(solar);
+      Results.print(solar,2);
       Results.print(",");
       Results.print("\n");
       Results.close();
@@ -109,10 +97,6 @@ void displaydata() {
   display.println(energy);
   display.setCursor(95, 10);
   display.println("mWh");
-  display.setCursor(0,20);
-  display.println(temp);
-  display.setCursor(30, 20);
-  display.println("C");
   display.setCursor(40,20);
   display.println(RC);
   display.setCursor(65, 20);
@@ -133,16 +117,8 @@ void ina219values() {
   energy = energy + power / 3600;
 }
 
-void dht22values() {
-  // read huimidity and temperatue values from DHT22.
-   temp = DHT.readTemperature();
-   humidity = DHT.readHumidity();
-}
-
 void powerEstimation(){
    // Estimate the power usage for devices.
    RC = power * 72 /(1000 * 10);
-   RC = floor(RC * 100 + 0.5)/100;
    solar = power  * 24 * 1.2 / (1000*4.5);
-   solar = floor(solar * 100 + 0.5)/100;
 }
