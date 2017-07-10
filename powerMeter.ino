@@ -4,7 +4,7 @@
 #include <Adafruit_SSD1306.h>
 #include <SPI.h>
 #include "SdFat.h"
-//Version 0.1.1
+//Version 0.1.2
 
 SdFat SD;
 #define OLED_RESET 4
@@ -120,7 +120,5 @@ void ina219values() {
 void powerEstimation(){
    // Estimate the power usage for devices.
    RC = power * 72 /(1000 * 10);
-   //RC = floor(RC * 100 + 0.5)/100;
    solar = power  * 24 * 1.2 / (1000*4.5);
-   //solar = floor(solar * 100 + 0.5)/100;
 }
